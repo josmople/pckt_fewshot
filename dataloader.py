@@ -1,0 +1,65 @@
+import torch
+import data as D
+import config as C
+
+import torch
+
+
+ISCXVPN2016 = D.ISCXVPN2016(C.dirpath_iscxvpn2016, allow_pcapng=False)
+
+generator = torch.Generator().manual_seed(42)
+
+
+def load_dataset_from_scratch(cls):
+    paths = ISCXVPN2016.paths()
+    tags = ISCXVPN2016.tags()
+
+    datasets = []
+    for p, t in zip(paths, tags):
+        if cls in t:
+            ds = D.generate_pcap_dataset(p)
+            datasets.append(ds)
+
+    if len(datasets) > 0:
+        return sum(datasets[1:], datasets[0])
+    return datasets[0]
+
+
+# load_dataset = load_dataset_from_scratch
+def load_dataset(cls):
+    from os.path import exists
+    if exists(f"cache/{cls}"):
+        filenames = D.utils.utils.glob(f"cache/{cls}/*.pt")
+        return D.utils.dcache_tensor(filenames, f"cache/{cls}/{{idx:012}}.pt")
+
+    from tqdm import tqdm
+
+    ds = load_dataset_from_scratch(cls)
+    ds = D.utils.dcache_tensor(ds, f"cache/{cls}/{{idx:012}}.pt")
+    print("Processing: ", cls)
+    for _ in tqdm(ds):
+        pass
+
+    return load_dataset(cls)
+
+
+train_seen = {}
+test_seen = {}
+test_unseen = {}
+
+for cls in C.seen_classes:
+    print("Seen", cls)
+    ds = load_dataset(cls)
+
+    train_count = int(C.seen_classes_split * len(ds))
+    test_count = len(ds) - train_count
+
+    train_ds, test_ds = D.utils.random_split(ds, [train_count, test_count], generator)
+
+    train_seen[cls] = train_ds
+    test_seen[cls] = test_ds
+
+for cls in C.unseen_classes:
+    print("UnSeen", cls)
+    ds = load_dataset(cls)
+    test_unseen[cls] = ds
