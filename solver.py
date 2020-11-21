@@ -8,6 +8,7 @@ import fewshot as F
 
 import random
 random.seed(C.seed)
+torch.manual_seed(C.seed)
 
 network = M.SimpleClassifier()
 
