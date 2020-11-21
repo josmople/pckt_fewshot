@@ -23,7 +23,7 @@ def load_dataset_from_scratch(cls):
             d.close()
 
     if len(datasets) > 0:
-        return sum(datasets[1:], datasets[0])
+        return sum(datasets[1:], datasets[0]), close_all
     return datasets[0], close_all
 
 
@@ -31,6 +31,7 @@ def load_dataset_from_scratch(cls):
 def load_dataset(cls):
     from os.path import exists
     if exists(f"cache/{cls}"):
+        print("Loading Cache: ", cls)
         from torch import load
         return D.utils.files(f"cache/{cls}/*.pt", load)
 
@@ -39,6 +40,7 @@ def load_dataset(cls):
     ds, close_all = load_dataset_from_scratch(cls)
     ds = D.utils.dcache_tensor(ds, f"cache/{cls}/{{idx:012}}.pt")
     print("Processing: ", cls)
+    ds = D.utils.DataLoader(ds, batch_size=1000, num_workers=1000)
     for _ in tqdm(ds):
         pass
     close_all()
