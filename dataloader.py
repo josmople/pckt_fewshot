@@ -31,8 +31,8 @@ def load_dataset_from_scratch(cls):
 def load_dataset(cls):
     from os.path import exists
     if exists(f"cache/{cls}"):
-        filenames = D.utils.utils.glob(f"cache/{cls}/*.pt")
-        return D.utils.dcache_tensor(filenames, f"cache/{cls}/{{idx:012}}.pt")
+        from torch import load
+        return D.utils.files(f"cache/{cls}/*.pt", load)
 
     from tqdm import tqdm
 
