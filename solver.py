@@ -1,14 +1,23 @@
 import torch
+import torch.optim as optim
+
 import dataloader as D
+import model as M
 import config as C
+import fewshot as F
 
 import random
+random.seed(C.seed)
 
-print(C.seen_classes)
-print(C.unseen_classes)
+network = M.SimpleClassifier()
 
-x = random.sample(C.seen_classes, k=3)
+optimizer = optim.Adam(network.parameters(), lr=C.lr_init)
+scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=C.lr_epoch_updates, gamma=0.1)
 
-# print(D.ISCXVPN2016.paths())
+for e in range(C.episode_count):
+    classes = random.sample(C.seen_classes, k=C.episode_size)
+    loss = F.episode(*[D.train_seen[c] for c in classes], network, shots=C.shots)
 
-print(D.train_seen["icq"])
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()

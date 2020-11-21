@@ -7,7 +7,7 @@ import torch
 
 ISCXVPN2016 = D.ISCXVPN2016(C.dirpath_iscxvpn2016, allow_pcapng=False)
 
-generator = torch.Generator().manual_seed(42)
+generator = torch.Generator().manual_seed(C.seed)
 
 
 def load_dataset_from_scratch(cls):
@@ -48,7 +48,6 @@ test_seen = {}
 test_unseen = {}
 
 for cls in C.seen_classes:
-    print("Seen", cls)
     ds = load_dataset(cls)
 
     train_count = int(C.seen_classes_split * len(ds))
