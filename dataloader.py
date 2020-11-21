@@ -20,9 +20,13 @@ def load_dataset_from_scratch(cls):
             ds = D.generate_pcap_dataset(p)
             datasets.append(ds)
 
+    def close_all():
+        for d in datasets:
+            d.close()
+
     if len(datasets) > 0:
         return sum(datasets[1:], datasets[0])
-    return datasets[0]
+    return datasets[0], close_all
 
 
 # load_dataset = load_dataset_from_scratch
@@ -34,11 +38,12 @@ def load_dataset(cls):
 
     from tqdm import tqdm
 
-    ds = load_dataset_from_scratch(cls)
+    ds, close_all = load_dataset_from_scratch(cls)
     ds = D.utils.dcache_tensor(ds, f"cache/{cls}/{{idx:012}}.pt")
     print("Processing: ", cls)
     for _ in tqdm(ds):
         pass
+    close_all()
 
     return load_dataset(cls)
 
@@ -59,6 +64,5 @@ for cls in C.seen_classes:
     test_seen[cls] = test_ds
 
 for cls in C.unseen_classes:
-    print("UnSeen", cls)
     ds = load_dataset(cls)
     test_unseen[cls] = ds
