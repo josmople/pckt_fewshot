@@ -45,4 +45,5 @@ for e in tqdm(range(C.episode_count)):
     scheduler.step()
 
 print("Final: ", loss.item())
+torch.save(network.state_dict(), "test.pth")
 print("End")

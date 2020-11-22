@@ -14,7 +14,7 @@ shots = 5
 bytecount = 40
 
 lr_init = 1e-4
-lr_epoch_updates = [episode_count]
+lr_epoch_updates = [2000]
 # lr_epoch_updates = [int(10**i) for i in range(3, 5)]
 
 seed = 42
