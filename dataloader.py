@@ -33,14 +33,13 @@ def load_dataset(cls):
     if exists(f"cache/{cls}"):
         print("Loading Cache: ", cls)
         from torch import load
-        return D.utils.files(f"cache/{cls}/*.pt", load)
+        return D.utils.files(f"cache/{cls}/*.pt", [load, lambda t: t.cuda()])
 
     from tqdm import tqdm
 
     ds, close_all = load_dataset_from_scratch(cls)
     ds = D.utils.dcache_tensor(ds, f"cache/{cls}/{{idx:012}}.pt")
     print("Processing: ", cls)
-    ds = D.utils.DataLoader(ds, batch_size=1000, num_workers=1000)
     for _ in tqdm(ds):
         pass
     close_all()
