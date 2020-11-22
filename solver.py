@@ -29,4 +29,6 @@ for e in tqdm(range(C.episode_count)):
     if e % 100 == 0:
         print(loss.item())
 
+    scheduler.step()
+
 print("Final: ", loss.item())

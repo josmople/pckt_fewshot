@@ -5,14 +5,14 @@ all_classes = ["aim", "icq", "email", "facebook", "netflix"]
 seen_classes = all_classes[:len(all_classes) // 4 * 3]
 unseen_classes = [c for c in all_classes if c not in seen_classes]
 
-episode_count = 1000
+episode_count = 100000
 episode_size = max(len(seen_classes) // 4 * 3, 2)
 shots = 5
 
 bytecount = 40
 
-lr_init = 1e-4
-lr_epoch_updates = [2, 4]
+lr_init = 1e-3
+lr_epoch_updates = [int(10**i) for i in range(1, 5)]
 
 seed = 42
 
