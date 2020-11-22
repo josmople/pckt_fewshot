@@ -19,4 +19,4 @@ class SimpleClassifier(nn.Sequential):
             layers.append(l)
             layers.append(actfn())
 
-        super().__init__(*layers)
+        super().__init__(*layers[:-1])
