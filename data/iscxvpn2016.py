@@ -1,3 +1,4 @@
+import typing as _T
 
 
 class ISCXVPN2016:
@@ -11,7 +12,7 @@ class ISCXVPN2016:
     def clear_cache(self):
         self.cache = {}
 
-    def paths(self):
+    def paths(self) -> _T.List[str]:
         if "paths" in self.cache:
             return self.cache["paths"]
 
@@ -28,7 +29,7 @@ class ISCXVPN2016:
         self.cache["paths"] = output
         return output
 
-    def names(self):
+    def names(self) -> _T.List[str]:
         if "names" in self.cache:
             return self.cache["names"]
 
@@ -38,7 +39,7 @@ class ISCXVPN2016:
         self.cache["names"] = output
         return output
 
-    def filenames(self):
+    def filenames(self) -> _T.List[str]:
         if "filenames" in self.cache:
             return self.cache["filenames"]
 
@@ -48,7 +49,7 @@ class ISCXVPN2016:
         self.cache["filenames"] = output
         return output
 
-    def tags(self):
+    def tags(self) -> _T.List[_T.List[str]]:
         if "tags" in self.cache:
             return self.cache["tags"]
 
@@ -101,3 +102,22 @@ class ISCXVPN2016:
         output = [generate_tags(name) for name in self.names()]
         self.cache["tags"] = output
         return output
+
+    def find(self, pos, neg=None) -> _T.List[int]:
+        if pos is None:
+            pos = []
+        if neg is None:
+            neg = []
+        if isinstance(pos, str):
+            pos = [pos]
+        if isinstance(neg, str):
+            neg = [neg]
+        assert isinstance(pos, (list, tuple))
+        assert isinstance(neg, (list, tuple))
+
+        idxs = []
+        for idx, tags in enumerate(self.tags()):
+            if all([cls in tags for cls in pos]) and all([c not in tags for c in neg]):
+                idxs.append(idx)
+
+        return idxs

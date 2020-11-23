@@ -22,7 +22,7 @@ def dist_fn(x, y):
     return pairwise_distance(x, y, p=2)
 
 
-def episode(*datasets, features_fn, n_support=5, n_query=100, prototype_fn=prototype_fn, pairdist_fn=pairdist_fn):
+def episode(*datasets, features_fn, n_support=5, n_query=100, lambda_dist=0.4, lambda_class=1):
     from torch import cat, tensor
     from torch.nn.functional import cross_entropy
 
@@ -48,18 +48,18 @@ def episode(*datasets, features_fn, n_support=5, n_query=100, prototype_fn=proto
         distance_loss = distances.mean()
         del distances
 
-        scores = pairdist_fn(queries, prototypes)
+        scores = -pairdist_fn(queries, prototypes)
         labels = tensor([i] * scores.size(0)).to(scores.device)
         class_loss = cross_entropy(scores, labels)
         del scores, labels
 
-        loss = distance_loss + class_loss
+        loss = lambda_dist * distance_loss + lambda_class * class_loss
         total_loss += loss
 
     return total_loss
 
 
-def accuracy(*datasets, features_fn, n_support=5, n_query=100, prototype_fn=prototype_fn, pairdist_fn=pairdist_fn):
+def accuracy(*datasets, features_fn, n_support=5, n_query=100):
     from torch import cat, tensor, argmax, softmax
 
     prototypes = []
@@ -81,9 +81,8 @@ def accuracy(*datasets, features_fn, n_support=5, n_query=100, prototype_fn=prot
         temp = [1] * (queries.dim() - 1)
         prototype = prototype.repeat(queries.size(0), *temp)
 
-        scores = pairdist_fn(queries, prototypes)
-        probs = softmax(scores, dim=1)
-        preds = argmax(probs, dim=1)
+        scores = -pairdist_fn(queries, prototypes)
+        preds = argmax(scores, dim=1)
         labels = tensor([i] * scores.size(0)).to(scores.device)
 
         correct = (preds == labels).sum()
@@ -91,18 +90,3 @@ def accuracy(*datasets, features_fn, n_support=5, n_query=100, prototype_fn=prot
         total_queries += queries.size(0)
 
     return total_correct / total_queries
-
-
-def predict(supports, queries, features_fn, prototype_fn=prototype_fn, distance_fn=pairdist_fn):
-    distances = []
-    for support, query in zip(supports, queries):
-        query = features_fn(query)
-        support = features_fn(support)
-
-        prototype = prototype_fn(support)
-        distance = distance_fn(prototype, query)
-        distances.append(distance.item())
-
-    distance_min = min(distances)
-    distance_minidx = distances.index(distance_min)
-    return distance_min, distance_minidx

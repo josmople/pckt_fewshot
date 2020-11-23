@@ -16,5 +16,4 @@ network = M.SimpleClassifier(in_channels=C.usable_bits, hidden_channels=[C.bits,
 
 classes = random.sample(C.seen_classes, k=C.episode_size)
 datasets = [D.train_seen[c] for c in classes]
-
-loss = F.accuracy(*datasets, features_fn=network, n_support=C.shots)
+loss = F.accuracy(*datasets, features_fn=network, n_support=C.n_support)
